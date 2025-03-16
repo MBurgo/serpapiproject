@@ -58,9 +58,7 @@ def main():
         st.subheader("AI-Generated Summary:")
         st.write(summary)
 
-# Title + Subtitle
-st.markdown("<div class='my-custom-title'>Welcome to My Styled Streamlit App!</div>", unsafe_allow_html=True)
-st.markdown("<div class='my-custom-subtitle'>Shining with a Custom Theme</div>", unsafe_allow_html=True)
+
 
 # Normal Streamlit code
 st.write("Here is some normal Streamlit content with the default theming + our custom CSS.")
