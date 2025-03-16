@@ -1,4 +1,27 @@
 import streamlit as st
+import streamlit.components.v1 as components
+
+# Basic page config
+st.set_page_config(page_title="My Styled App", page_icon="🌟", layout="centered")
+
+# Custom CSS
+custom_css = """
+<style>
+.my-custom-title {
+    color: #4B79A1;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    font-size: 36px;
+    margin: 20px 0;
+}
+.my-custom-subtitle {
+    color: #666666;
+    text-align: center;
+    margin: 5px 0 20px 0;
+}
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # We import the 'main' function from data_retrieval_storage_news_engine (which fetches & stores)
 from data_retrieval_storage_news_engine import main as retrieve_and_store_data
@@ -24,16 +47,23 @@ def run_all():
 
 
 def main():
-    st.title("Financial Data Retrieval & Summaries")
-    st.write("Click the button below to fetch/store data and generate a summary in one step.")
+    st.title("Foolish Financial Briefings - Based on Trending News")
+    st.write("Click the button below to start. Our AI will scrape what's making the news in the world of investing today, and then create 5 briefs that writers can use as inspiration for their article ideas.")
 
-    if st.button("Run All Steps"):
+    if st.button("Get Your Briefs!"):
         summary = run_all()
         st.success("All steps completed successfully!")
 
         # Now show the summary in the app:
         st.subheader("AI-Generated Summary:")
         st.write(summary)
+
+# Title + Subtitle
+st.markdown("<div class='my-custom-title'>Welcome to My Styled Streamlit App!</div>", unsafe_allow_html=True)
+st.markdown("<div class='my-custom-subtitle'>Shining with a Custom Theme</div>", unsafe_allow_html=True)
+
+# Normal Streamlit code
+st.write("Here is some normal Streamlit content with the default theming + our custom CSS.")
 
 
 if __name__ == "__main__":
