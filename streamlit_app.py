@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # Basic page config
-st.set_page_config(page_title="My Styled App", page_icon="🌟", layout="centered")
+st.set_page_config(page_title="Burgo's Briefing App", page_icon="🌟", layout="centered")
 
 # Custom CSS
 custom_css = """
