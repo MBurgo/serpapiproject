@@ -3,6 +3,8 @@ import openai
 import gspread
 import pandas as pd
 import time
+import datetime as dt
+import pytz
 from google.oauth2.service_account import Credentials
 
 # Define the scope for Google Sheets
@@ -57,7 +59,10 @@ def summarize_data(formatted_data):
     Summarize data using the o1-mini model with a single 'user' role message.
     We combine system-like instructions and user instructions into a single prompt.
     """
-    current_date = time.strftime("%Y-%m-%d")
+    # >>> CHANGE: Use local time for the date in the summary <<<
+    local_tz = pytz.timezone("Australia/Sydney")  # or any other desired timezone
+    now_local = dt.datetime.now(local_tz)
+    current_date = now_local.strftime("%Y-%m-%d")
 
     # System-like context for the prompt
     system_like_context = (
