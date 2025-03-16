@@ -1,10 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 # Basic page config
 st.set_page_config(page_title="Burgo's Briefing App", page_icon="🌟", layout="centered")
-
-st.markdown(custom_css, unsafe_allow_html=True)
 
 # We import the 'main' function from data_retrieval_storage_news_engine (which fetches & stores)
 from data_retrieval_storage_news_engine import main as retrieve_and_store_data
