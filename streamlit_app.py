@@ -59,10 +59,5 @@ def main():
         st.write(summary)
 
 
-
-# Normal Streamlit code
-st.write("Here is some normal Streamlit content with the default theming + our custom CSS.")
-
-
 if __name__ == "__main__":
     main()
