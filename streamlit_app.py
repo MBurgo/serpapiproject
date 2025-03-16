@@ -192,7 +192,7 @@ def run_all_cooldown(sheet_obj, cooldown_hours=3):
 # 6) MAIN STREAMLIT APP LOGIC
 #
 def main():
-    st.title("Foolish Financial Briefings - Based on Trending News (UTC / Local Fix)")
+    st.title("Foolish Financial Briefings - Based on Trending News")
     st.write(
         "Click the button below to start. Our AI will scrape what's making the "
         "news in the world of investing today, then create 5 briefs that "
