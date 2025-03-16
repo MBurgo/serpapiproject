@@ -4,23 +4,6 @@ import streamlit.components.v1 as components
 # Basic page config
 st.set_page_config(page_title="Burgo's Briefing App", page_icon="🌟", layout="centered")
 
-# Custom CSS
-custom_css = """
-<style>
-.my-custom-title {
-    color: #4B79A1;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    font-size: 36px;
-    margin: 20px 0;
-}
-.my-custom-subtitle {
-    color: #666666;
-    text-align: center;
-    margin: 5px 0 20px 0;
-}
-</style>
-"""
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # We import the 'main' function from data_retrieval_storage_news_engine (which fetches & stores)
