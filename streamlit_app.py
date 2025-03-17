@@ -203,6 +203,9 @@ def main():
           to highlight recurring themes and provide article ideas.
         - **Cooldown**: This tool can only be **run once every three hours** 
           to avoid exceeding API rate limits.
+
+        The process may take a few minutes to run while it runs through the scraping process. Please be patient.
+          
         """
     )
 
