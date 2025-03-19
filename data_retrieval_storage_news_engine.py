@@ -3,7 +3,6 @@ import gspread
 import requests
 import streamlit as st
 from bs4 import BeautifulSoup
-import bs4  # needed for catching ParserRejectedMarkup
 from google.oauth2.service_account import Credentials
 from pytrends.exceptions import TooManyRequestsError
 from serpapi import GoogleSearch
@@ -16,7 +15,7 @@ creds_dict = st.secrets["service_account"]
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
-# Spreadsheet ID
+# Spreadsheet ID remains the same (or move it to st.secrets if you prefer)
 spreadsheet_id = "1BzTJgX7OgaA0QNfzKs5AgAx2rvZZjDdorgAz0SD9NZg"
 sheet = client.open_by_key(spreadsheet_id)
 
@@ -51,14 +50,17 @@ def fetch_meta_description(url):
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 200:
-            soup = BeautifulSoup(response.content, 'html.parser')
-            meta_tag = soup.find('meta', attrs={'name': 'description'})
-            if meta_tag and 'content' in meta_tag.attrs:
-                return meta_tag['content']
-        return "No Meta Description"
-    except bs4.builder.ParserRejectedMarkup as e:
-        print(f"BeautifulSoup rejected the markup from {url}: {e}")
-        return "Parser Error"
+            try:
+                soup = BeautifulSoup(response.content, "lxml")
+                meta_tag = soup.find("meta", attrs={"name": "description"})
+                if meta_tag and "content" in meta_tag.attrs:
+                    return meta_tag["content"]
+                return "No Meta Description"
+            except Exception as e:
+                print(f"BeautifulSoup parsing failed for {url}: {e}")
+                return "Parser Error"
+        else:
+            return f"HTTP {response.status_code}"
     except requests.RequestException as e:
         print(f"Failed to fetch {url}: {e}")
         return "Error Fetching Description"
@@ -93,12 +95,10 @@ def fetch_google_trends():
         try:
             search = GoogleSearch(params)
             results = search.get_dict()
-
             print("Google Trends API Response:", results)
 
             rising_queries = results.get("related_queries", {}).get("rising", [])
             top_queries = results.get("related_queries", {}).get("top", [])
-
             print("Rising Queries:", rising_queries)
             print("Top Queries:", top_queries)
 
@@ -106,7 +106,7 @@ def fetch_google_trends():
 
         except TooManyRequestsError:
             wait_time = (2 ** attempts) * 10
-            print(f"Rate limited. Waiting {wait_time} seconds...")
+            print(f"Rate limited by Google Trends API. Waiting {wait_time} seconds...")
             time.sleep(wait_time)
             attempts += 1
 
@@ -126,18 +126,16 @@ def clean_data(data, default_values):
 
 def ensure_worksheet_exists(sheet_obj, title):
     try:
-        worksheet = sheet_obj.worksheet(title)
+        return sheet_obj.worksheet(title)
     except gspread.exceptions.WorksheetNotFound:
-        worksheet = sheet_obj.add_worksheet(title=title, rows="100", cols="20")
-    return worksheet
+        return sheet_obj.add_worksheet(title=title, rows="100", cols="20")
 
 
 def store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_data):
     # Google News
     news_sheet = ensure_worksheet_exists(sheet, "Google News")
     news_sheet.clear()
-    news_headers = ["Title", "Link", "Snippet", "Meta Description"]
-    news_sheet.append_row(news_headers)
+    news_sheet.append_row(["Title", "Link", "Snippet", "Meta Description"])
     for article in news_data:
         meta_description = fetch_meta_description(article.get("link", ""))
         news_sheet.append_row([
@@ -151,8 +149,7 @@ def store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_da
     # Top Stories
     top_stories_sheet = ensure_worksheet_exists(sheet, "Top Stories")
     top_stories_sheet.clear()
-    top_stories_headers = ["Title", "Link", "Snippet", "Meta Description"]
-    top_stories_sheet.append_row(top_stories_headers)
+    top_stories_sheet.append_row(["Title", "Link", "Snippet", "Meta Description"])
     for story in top_stories_data:
         meta_description = fetch_meta_description(story.get("link", ""))
         top_stories_sheet.append_row([
@@ -163,11 +160,10 @@ def store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_da
         ])
         time.sleep(1)
 
-    # Rising
+    # Google Trends Rising
     rising_sheet = ensure_worksheet_exists(sheet, "Google Trends Rising")
     rising_sheet.clear()
-    rising_headers = ["Query", "Value"]
-    rising_sheet.append_row(rising_headers)
+    rising_sheet.append_row(["Query", "Value"])
     for query in rising_data:
         rising_sheet.append_row([
             query.get("query"),
@@ -175,11 +171,10 @@ def store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_da
         ])
         time.sleep(1)
 
-    # Top
+    # Google Trends Top
     top_sheet = ensure_worksheet_exists(sheet, "Google Trends Top")
     top_sheet.clear()
-    top_headers = ["Query", "Value"]
-    top_sheet.append_row(top_headers)
+    top_sheet.append_row(["Query", "Value"])
     for query in top_data:
         top_sheet.append_row([
             query.get("query"),
@@ -189,32 +184,21 @@ def store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_da
 
 
 def main():
-    """
-    Main function that orchestrates data fetching from SerpAPI & storing in Google Sheets.
-    """
     news_data = fetch_google_news()
     top_stories_data = fetch_google_top_stories()
     rising_data, top_data = fetch_google_trends()
 
-    # Optional: Clean data into simplified forms (titles/links/snippets only)
     cleaned_news_data = clean_data(
-        [[article.get("title", "No Title"),
-          article.get("link", "No Link"),
-          article.get("snippet", "No Snippet")] for article in news_data],
+        [[a.get("title", ""), a.get("link", ""), a.get("snippet", "")]
+         for a in news_data],
         ["No Title", "No Link", "No Snippet"]
     )
-
     cleaned_top_stories_data = clean_data(
-        [[story.get("title", "No Title"),
-          story.get("link", "No Link"),
-          story.get("snippet", "No Snippet")] for story in top_stories_data],
+        [[s.get("title", ""), s.get("link", ""), s.get("snippet", "")]
+         for s in top_stories_data],
         ["No Title", "No Link", "No Snippet"]
     )
 
-    cleaned_rising_data = rising_data  # already dict format
-    cleaned_top_data = top_data
-
-    # You are still passing full data into Google Sheets
     store_data_in_google_sheets(news_data, top_stories_data, rising_data, top_data)
 
 
