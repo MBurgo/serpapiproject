@@ -132,7 +132,7 @@ def summarize_data(formatted_data):
 
     # Call the OpenAI API
     response = openai.ChatCompletion.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=messages
     )
     summary = response['choices'][0]['message']['content']
